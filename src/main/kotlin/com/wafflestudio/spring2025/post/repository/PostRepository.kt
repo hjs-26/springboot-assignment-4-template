@@ -3,12 +3,9 @@ package com.wafflestudio.spring2025.post.repository
 import com.wafflestudio.spring2025.post.model.Post
 import com.wafflestudio.spring2025.post.model.PostWithUserAndBoard
 import org.springframework.data.jdbc.repository.query.Query
-import org.springframework.data.relational.core.sql.LockMode
-import org.springframework.data.relational.repository.Lock
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import java.time.Instant
-import java.util.Optional
 
 interface PostRepository : CrudRepository<Post, Long> {
     @Query(

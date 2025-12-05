@@ -1,14 +1,11 @@
 package com.wafflestudio.spring2025.user.controller
 
-import com.wafflestudio.spring2025.user.LoggedInUser
 import com.wafflestudio.spring2025.user.dto.LoginRequest
 import com.wafflestudio.spring2025.user.dto.LoginResponse
 import com.wafflestudio.spring2025.user.dto.RegisterRequest
 import com.wafflestudio.spring2025.user.dto.RegisterResponse
-import com.wafflestudio.spring2025.user.model.User
 import com.wafflestudio.spring2025.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -17,7 +14,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController

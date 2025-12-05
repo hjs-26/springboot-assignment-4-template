@@ -5,11 +5,8 @@ import com.wafflestudio.spring2025.post.repository.PostRepository
 import com.wafflestudio.spring2025.postlike.model.PostLike
 import com.wafflestudio.spring2025.postlike.repository.PostLikeRepository
 import com.wafflestudio.spring2025.user.model.User
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.sql.SQLIntegrityConstraintViolationException
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class PostLikeService(
@@ -26,7 +23,7 @@ class PostLikeService(
 
         val newLike = PostLike(userId = user.id!!, postId = postId)
         postLikeRepository.save(newLike)
-        post.likeCount++;
+        post.likeCount++
         postRepository.save(post)
     }
 
@@ -38,7 +35,7 @@ class PostLikeService(
         val post = postRepository.findByIdWithLock(postId) ?: throw PostNotFoundException()
         val deleted = postLikeRepository.deleteByUserIdAndPostId(user.id!!, postId)
         if (deleted == 1L) {
-            post.likeCount--;
+            post.likeCount--
         }
         postRepository.save(post)
     }

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/users")
 @Tag(name = "User", description = "사용자 API")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
 ) {
     @Operation(summary = "본인 정보 조회", description = "로그인한 사용자의 정보를 조회합니다")
     @ApiResponses(
@@ -38,7 +38,7 @@ class UserController(
     @PostMapping("/logout")
     fun logout(
         @Parameter(hidden = true) @LoggedInUser user: User,
-        @RequestParam token: String
+        @RequestParam token: String,
     ): ResponseEntity<Unit> {
         userService.logout(user, token)
         return ResponseEntity.ok().build()
