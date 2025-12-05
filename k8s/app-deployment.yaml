@@ -15,39 +15,45 @@ spec:
         app: spring-app
     spec:
       containers:
-      - name: spring-app
-        image: hjs26/spring-seminar:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_CONFIG_LOCATION
-          value: /config/application.yaml
-        volumeMounts:
-        - name: config-volume
-          mountPath: /config
-        livenessProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
+        - name: spring-app
+          image: hjs26/spring-seminar:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: SPRING_CONFIG_LOCATION
+              value: /config/application.yaml
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
       volumes:
-      - name: config-volume
-        configMap:
-          name: app-config
+        - name: config-volume
+          configMap:
+            name: app-config
 ---
 apiVersion: v1
 kind: Service
@@ -56,8 +62,8 @@ metadata:
 spec:
   selector:
     app: spring-app
+  type: LoadBalancer
   ports:
-  - port: 80
-    targetPort: 8080
-    nodePort: 30080
-  type: NodePort
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
