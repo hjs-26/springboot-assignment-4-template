@@ -59,7 +59,7 @@ class UserService(
 
     fun logout(
         user: User,
-        token: String
+        token: String,
     ) {
         jwtBlacklistService.addToBlacklist(token)
     }
