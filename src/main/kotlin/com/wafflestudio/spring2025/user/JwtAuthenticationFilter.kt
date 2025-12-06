@@ -1,5 +1,6 @@
 package com.wafflestudio.spring2025.user
 
+import com.wafflestudio.spring2025.user.service.JwtBlacklistService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -10,6 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
+    private val jwtBlacklistService: JwtBlacklistService,
 ) : OncePerRequestFilter() {
     private val pathMatcher = AntPathMatcher()
 
@@ -26,6 +28,12 @@ class JwtAuthenticationFilter(
         val token = resolveToken(request)
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
+            // 블랙리스트에 있는 토큰인지 확인
+            if (jwtBlacklistService.isBlacklisted(token)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been revoked")
+                return
+            }
+
             val username = jwtTokenProvider.getUsername(token)
             request.setAttribute("username", username)
         } else {

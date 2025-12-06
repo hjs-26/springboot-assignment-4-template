@@ -2,13 +2,16 @@ package com.wafflestudio.spring2025.user.controller
 
 import com.wafflestudio.spring2025.user.dto.LoginRequest
 import com.wafflestudio.spring2025.user.dto.LoginResponse
+import com.wafflestudio.spring2025.user.dto.LogoutResponse
 import com.wafflestudio.spring2025.user.dto.RegisterRequest
 import com.wafflestudio.spring2025.user.dto.RegisterResponse
+import com.wafflestudio.spring2025.user.service.JwtBlacklistService
 import com.wafflestudio.spring2025.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "Auth", description = "인증 API")
 class AuthController(
     private val userService: UserService,
+    private val jwtBlacklistService: JwtBlacklistService,
 ) {
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다")
     @ApiResponses(
@@ -59,5 +63,29 @@ class AuthController(
                 password = loginRequest.password,
             )
         return ResponseEntity.status(HttpStatus.CREATED).body(LoginResponse(token))
+    }
+
+    @Operation(summary = "로그아웃", description = "현재 JWT 토큰을 블랙리스트에 추가하여 로그아웃합니다")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            ApiResponse(responseCode = "401", description = "인증 실패 (유효하지 않은 토큰)"),
+        ],
+    )
+    @PostMapping("/logout")
+    fun logout(request: HttpServletRequest): ResponseEntity<LogoutResponse> {
+        val token = resolveToken(request)
+        if (token != null) {
+            jwtBlacklistService.addToBlacklist(token)
+        }
+        return ResponseEntity.ok(LogoutResponse("Successfully logged out"))
+    }
+
+    private fun resolveToken(request: HttpServletRequest): String? {
+        val bearerToken = request.getHeader("Authorization")
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7)
+        }
+        return null
     }
 }
