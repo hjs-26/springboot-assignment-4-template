@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/users")
 @Tag(name = "User", description = "사용자 API")
 class UserController(
-    private val userService: UserService,
+    private val userService: UserService
 ) {
     @Operation(summary = "본인 정보 조회", description = "로그인한 사용자의 정보를 조회합니다")
     @ApiResponses(
@@ -35,11 +35,20 @@ class UserController(
         @Parameter(hidden = true) @LoggedInUser user: User,
     ): ResponseEntity<GetMeResponse> = ResponseEntity.ok(UserDto(user))
 
+    @Operation(summary = "로그아웃", description = "현재 JWT 토큰을 무효화합니다")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            ApiResponse(responseCode = "401", description = "인증 실패"),
+        ],
+    )
     @PostMapping("/logout")
     fun logout(
         @Parameter(hidden = true) @LoggedInUser user: User,
-        @RequestParam token: String,
+        @Parameter(hidden = true) @org.springframework.web.bind.annotation.RequestHeader("Authorization") authorization: String,
     ): ResponseEntity<Unit> {
+        // "Bearer " 접두사 제거
+        val token = authorization.removePrefix("Bearer ")
         userService.logout(user, token)
         return ResponseEntity.ok().build()
     }

@@ -30,6 +30,6 @@ class PostLikeController(
         @LoggedInUser user: User,
     ): ResponseEntity<UnlikePostResponse> {
         postLikeService.unlikePost(postId, user)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 }

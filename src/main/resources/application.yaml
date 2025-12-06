@@ -6,6 +6,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   flyway:
     enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 jwt:
   secret: this-is-a-very-long-and-secure-secret-key-for-jwt-token-generation
@@ -22,3 +26,12 @@ logging:
             JdbcTemplate: DEBUG
             namedparam:
               NamedParameterJdbcTemplate: TRACE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

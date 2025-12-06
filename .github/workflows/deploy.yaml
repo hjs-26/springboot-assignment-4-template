@@ -1,0 +1,94 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/spring-seminar-2025
+  K8S_DEPLOYMENT: spring-app
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build -x test
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:latest
+            ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
+          export KUBECONFIG=kubeconfig.yaml
+
+      - name: Update image in deployment
+        run: |
+          export KUBECONFIG=kubeconfig.yaml
+          sed -i "s|YOUR_DOCKER_IMAGE:latest|${{ env.DOCKER_IMAGE }}:${{ github.sha }}|g" k8s/app-deployment.yaml
+
+      - name: Deploy MySQL
+        run: |
+          export KUBECONFIG=kubeconfig.yaml
+          kubectl apply -f k8s/mysql-deployment.yaml
+
+      - name: Deploy Redis
+        run: |
+          export KUBECONFIG=kubeconfig.yaml
+          kubectl apply -f k8s/redis-deployment.yaml
+
+      - name: Deploy Application
+        run: |
+          export KUBECONFIG=kubeconfig.yaml
+          kubectl apply -f k8s/app-deployment.yaml
+          kubectl rollout status deployment/${{ env.K8S_DEPLOYMENT }}
+
+      - name: Verify deployment
+        run: |
+          export KUBECONFIG=kubeconfig.yaml
+          kubectl get pods
+          kubectl get services
