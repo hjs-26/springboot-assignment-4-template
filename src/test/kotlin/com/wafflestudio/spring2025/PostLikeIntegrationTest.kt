@@ -2,12 +2,14 @@ package com.wafflestudio.spring2025
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.wafflestudio.spring2025.helper.DataGenerator
+import com.wafflestudio.spring2025.helper.mock.MockRedis
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -21,6 +23,7 @@ import java.util.concurrent.Executors
 @ActiveProfiles("test")
 @Testcontainers
 @AutoConfigureMockMvc
+@ContextConfiguration(initializers = [MockRedis::class])
 class PostLikeIntegrationTest
     @Autowired
     constructor(

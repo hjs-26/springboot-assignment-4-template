@@ -6,6 +6,7 @@ import com.wafflestudio.spring2025.course.crawling.ClassPlaceAndTime
 import com.wafflestudio.spring2025.course.crawling.DayOfWeek
 import com.wafflestudio.spring2025.course.dto.CourseSearchResponse
 import com.wafflestudio.spring2025.helper.DataGenerator
+import com.wafflestudio.spring2025.helper.mock.MockRedis
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -28,6 +30,7 @@ import java.util.concurrent.Executors
 @ActiveProfiles("test")
 @Testcontainers
 @AutoConfigureMockMvc
+@ContextConfiguration(initializers = [MockRedis::class])
 class TimetableIntegrationTest
     @Autowired
     constructor(
